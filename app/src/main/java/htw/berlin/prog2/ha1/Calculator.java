@@ -44,10 +44,18 @@ public class Calculator {
      * Werte sowie der aktuelle Operationsmodus zurückgesetzt, so dass der Rechner wieder
      * im Ursprungszustand ist.
      */
+    private boolean isClearPressedOnce = false;
     public void pressClearKey() {
+        if (isClearPressedOnce) {
+            latestValue = 0.0;
+            latestOperation = "";
+            isClearPressedOnce = false;
+        } else {
+            isClearPressedOnce = true;
+        }
         screen = "0";
-        latestOperation = "";
-        latestValue = 0.0;
+//        latestOperation = "";
+//        latestValue = 0.0;
     }
 
     /**
@@ -116,18 +124,30 @@ public class Calculator {
      * Wird die Taste weitere Male gedrückt (ohne andere Tasten dazwischen), so wird die letzte
      * Operation (ggf. inklusive letztem Operand) erneut auf den aktuellen Bildschirminhalt angewandt
      * und das Ergebnis direkt angezeigt.
+     * Falls das Verhalten erweitert wurde, um den letzten eingegebenen Operanden zu wiederholen,
+     * wenn die "="-Taste ohne Zwischenschritte mehrfach gedrückt wird, so wird der gleiche Wert
+     * wiederholt auf die letzte Operation angewandt.
      */
+    private double secondOperand;
     public void pressEqualsKey() {
-        var result = switch(latestOperation) {
-            case "+" -> latestValue + Double.parseDouble(screen);
-            case "-" -> latestValue - Double.parseDouble(screen);
-            case "x" -> latestValue * Double.parseDouble(screen);
-            case "/" -> latestValue / Double.parseDouble(screen);
-            default -> throw new IllegalArgumentException();
-        };
-        screen = Double.toString(result);
-        if(screen.equals("Infinity")) screen = "Error";
-        if(screen.endsWith(".0")) screen = screen.substring(0,screen.length()-2);
-        if(screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
+        if(!latestOperation.isEmpty()){
+            double curValue = Double.parseDouble(screen);
+
+            if(screen.equals(Double.toString(latestValue))){
+                latestValue = curValue;
+            }
+            var result = switch(latestOperation) {
+                case "+" -> latestValue + curValue;
+                case "-" -> latestValue - curValue;
+                case "x" -> latestValue * curValue;
+                case "/" -> (curValue == 0) ? Double.POSITIVE_INFINITY : latestValue / curValue;
+                default -> throw new IllegalArgumentException();
+            };
+            screen = Double.toString(result);
+            if(screen.equals("Infinity")) screen = "Error";
+
+            if(screen.endsWith(".0")) screen = screen.substring(0, screen.length() - 2);
+            if(screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
+        }
     }
 }
