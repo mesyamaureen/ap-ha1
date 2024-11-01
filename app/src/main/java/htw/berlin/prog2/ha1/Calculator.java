@@ -54,8 +54,6 @@ public class Calculator {
             isClearPressedOnce = true;
         }
         screen = "0";
-//        latestOperation = "";
-//        latestValue = 0.0;
     }
 
     /**
@@ -128,26 +126,32 @@ public class Calculator {
      * wenn die "="-Taste ohne Zwischenschritte mehrfach gedrückt wird, so wird der gleiche Wert
      * wiederholt auf die letzte Operation angewandt.
      */
-    private double secondOperand;
+    private Double secondOperand = null; // Variable to store second operand
+
     public void pressEqualsKey() {
-        if(!latestOperation.isEmpty()){
+        if (!latestOperation.isEmpty()) {
             double curValue = Double.parseDouble(screen);
 
-            if(screen.equals(Double.toString(latestValue))){
-                latestValue = curValue;
+            // Store the second operand only on the first "=" press
+            if (secondOperand == null) {
+                secondOperand = curValue;
             }
-            var result = switch(latestOperation) {
-                case "+" -> latestValue + curValue;
-                case "-" -> latestValue - curValue;
-                case "x" -> latestValue * curValue;
-                case "/" -> (curValue == 0) ? Double.POSITIVE_INFINITY : latestValue / curValue;
+
+            var result = switch (latestOperation) {
+                case "+" -> latestValue + secondOperand;
+                case "-" -> latestValue - secondOperand;
+                case "x" -> latestValue * secondOperand;
+                case "/" -> (secondOperand == 0) ? Double.POSITIVE_INFINITY : latestValue / secondOperand;
                 default -> throw new IllegalArgumentException();
             };
-            screen = Double.toString(result);
-            if(screen.equals("Infinity")) screen = "Error";
 
-            if(screen.endsWith(".0")) screen = screen.substring(0, screen.length() - 2);
-            if(screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
+            screen = Double.toString(result);
+            latestValue = result; // Update latestValue to the new result for further operations
+
+            // Handle edge cases and truncation
+            if (screen.equals("Infinity")) screen = "Error";
+            if (screen.endsWith(".0")) screen = screen.substring(0, screen.length() - 2);
+            if (screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
         }
     }
 }
