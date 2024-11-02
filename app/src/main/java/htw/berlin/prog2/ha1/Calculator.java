@@ -49,6 +49,7 @@ public class Calculator {
         if (isClearPressedOnce) {
             latestValue = 0.0;
             latestOperation = "";
+            secondOperand = null;
             isClearPressedOnce = false;
         } else {
             isClearPressedOnce = true;
@@ -66,8 +67,11 @@ public class Calculator {
      * @param operation "+" für Addition, "-" für Substraktion, "x" für Multiplikation, "/" für Division
      */
     public void pressBinaryOperationKey(String operation)  {
-        latestValue = Double.parseDouble(screen);
+        if (latestOperation.isEmpty()){
+            latestValue = Double.parseDouble(screen);
+        }
         latestOperation = operation;
+        secondOperand = null;
     }
 
     /**
@@ -126,13 +130,12 @@ public class Calculator {
      * wenn die "="-Taste ohne Zwischenschritte mehrfach gedrückt wird, so wird der gleiche Wert
      * wiederholt auf die letzte Operation angewandt.
      */
-    private Double secondOperand = null; // Variable to store second operand
+    private Double secondOperand = null; 
 
     public void pressEqualsKey() {
         if (!latestOperation.isEmpty()) {
             double curValue = Double.parseDouble(screen);
 
-            // Store the second operand only on the first "=" press
             if (secondOperand == null) {
                 secondOperand = curValue;
             }
@@ -146,9 +149,8 @@ public class Calculator {
             };
 
             screen = Double.toString(result);
-            latestValue = result; // Update latestValue to the new result for further operations
+            latestValue = result;
 
-            // Handle edge cases and truncation
             if (screen.equals("Infinity")) screen = "Error";
             if (screen.endsWith(".0")) screen = screen.substring(0, screen.length() - 2);
             if (screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
